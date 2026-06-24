@@ -14,6 +14,16 @@
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
+    # Handle X-Inertia Headers
+    RewriteCond %{HTTP:X-Inertia} .+
+    RewriteRule .* - [E=HTTP_X_INERTIA:%{HTTP:X-Inertia}]
+    RewriteCond %{HTTP:X-Inertia-Version} .+
+    RewriteRule .* - [E=HTTP_X_INERTIA_VERSION:%{HTTP:X-Inertia-Version}]
+    RewriteCond %{HTTP:X-Inertia-Partial-Component} .+
+    RewriteRule .* - [E=HTTP_X_INERTIA_PARTIAL_COMPONENT:%{HTTP:X-Inertia-Partial-Component}]
+    RewriteCond %{HTTP:X-Inertia-Partial-Data} .+
+    RewriteRule .* - [E=HTTP_X_INERTIA_PARTIAL_DATA:%{HTTP:X-Inertia-Partial-Data}]
+
     # Redirect Trailing Slashes If Not A Folder...
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_URI} (.+)/$
@@ -29,4 +39,14 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_URI} !^/public/
     RewriteRule ^(css|assets|market_assets|images|landing|uploads|storage|installer|js|vendor|build|screenshots|packages)/(.*)$ public/$1/$2 [L,NC]
+</IfModule>
+
+<IfModule mod_headers.c>
+    # Disable caching for dynamic requests
+    Header always set Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0"
+    Header always set Pragma "no-cache"
+    Header always set Expires "0"
+
+    # Expose Inertia headers
+    Header always set Access-Control-Expose-Headers "X-Inertia, X-Inertia-Version"
 </IfModule>
