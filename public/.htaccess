@@ -9,6 +9,14 @@
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
+    # Handle X-Inertia Header
+    RewriteCond %{HTTP:X-Inertia} .+
+    RewriteRule .* - [E=HTTP_X_INERTIA:%{HTTP:X-Inertia}]
+
+    # Handle X-Inertia-Version Header
+    RewriteCond %{HTTP:X-Inertia-Version} .+
+    RewriteRule .* - [E=HTTP_X_INERTIA_VERSION:%{HTTP:X-Inertia-Version}]
+
     # Redirect Trailing Slashes If Not A Folder...
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_URI} (.+)/$
@@ -18,4 +26,19 @@
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
+</IfModule>
+
+<IfModule mod_headers.c>
+    # Disable caching for Inertia requests to prevent JSON caching issues
+    Header always set Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0"
+    Header always set Pragma "no-cache"
+    Header always set Expires "0"
+
+    # Allow Inertia headers
+    Header always set Access-Control-Expose-Headers "X-Inertia, X-Inertia-Version"
+
+    # Ensure X-Inertia responses pass through correctly
+    <If "%{HTTP:X-Inertia} == 'true'">
+        Header always set Content-Type "text/html; charset=UTF-8"
+    </If>
 </IfModule>
